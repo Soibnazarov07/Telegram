@@ -49,31 +49,19 @@ async def handler(event):
     if not bot_active:
         return
 
+    # FAQAT SHAXSIY CHATLARNI QABUL QILISH (Guruh va kanallarni o'tkazib yuborish)
+    if event.is_group or event.is_channel:
+        return
+
     sender = await event.get_sender()
     if sender and sender.bot:
         return
 
-    is_group = event.is_group or event.is_channel
-    
-    # Guruhda bo'lsa: faqat @mention qilinganda yoki sizning xabaringizga reply qilingandagina ishlaydi
-    if is_group:
-        is_mentioned = event.mentioned
-        is_reply_to_me = False
-        
-        if event.is_reply:
-            reply_msg = await event.get_reply_message()
-            if reply_msg and reply_msg.out: # Agar siz yozgan xabarga reply qilingan bo'lsa
-                is_reply_to_me = True
-                
-        if not is_mentioned and not is_reply_to_me:
-            return # Guruhdagi boshqa xabarlarga e'tibor bermaydi
-
     # Shaxsiy chatda o'zingiz yozgan bo'lsangiz to'xtaydi
-    if not is_group:
-        messages_iter = client.iter_messages(event.chat_id, limit=1)
-        async for last_msg in messages_iter:
-            if last_msg.out:
-                return
+    messages_iter = client.iter_messages(event.chat_id, limit=1)
+    async for last_msg in messages_iter:
+        if last_msg.out:
+            return
 
     incoming_message = event.raw_text or ""
     chat_id = event.chat_id
@@ -101,25 +89,24 @@ async def handler(event):
                 os.remove(file_path)
 
         # --- 3. BANDLIK XABARI (Faqat shaxsiy chat uchun 1 kunda 1 marta) ---
-        if not is_group:
-            ONE_DAY_SECONDS = 24 * 60 * 60
-            needs_welcome = False
-            
-            if chat_id not in welcomed_chats:
+        ONE_DAY_SECONDS = 24 * 60 * 60
+        needs_welcome = False
+        
+        if chat_id not in welcomed_chats:
+            needs_welcome = True
+        else:
+            if current_time - welcomed_chats[chat_id] > ONE_DAY_SECONDS:
                 needs_welcome = True
-            else:
-                if current_time - welcomed_chats[chat_id] > ONE_DAY_SECONDS:
-                    needs_welcome = True
 
-            if needs_welcome:
-                welcome_text = (
-                    "Hozirda **Soibnazarov Ro'zimurod** bandlar, lekin **tez orada yana aloqaga chiqadilar**.\n"
-                    "🤖 Ungacha ularning o'rniga men — sun'iy intellekt (**AI**) yordamchisi javob beryapman.\n\n"
-                    "💬 Menga xohlagan matnli, ovozli yoki rasm ko'rinishidagi savollaringizni yuborishingiz mumkin. Qanday yordam bera olaman?"
-                )
-                await event.reply(welcome_text)
-                welcomed_chats[chat_id] = current_time
-                return
+        if needs_welcome:
+            welcome_text = (
+                "Hozirda **Soibnazarov Ro'zimurod** bandlar, lekin **tez orada yana aloqaga chiqadilar**.\n"
+                "🤖 Ungacha ularning o'rniga men — sun'iy intellekt (**AI**) yordamchisi javob beryapman.\n\n"
+                "💬 Menga xohlagan matnli, ovozli yoki rasm ko'rinishidagi savollaringizni yuborishingiz mumkin. Qanday yordam bera olaman?"
+            )
+            await event.reply(welcome_text)
+            welcomed_chats[chat_id] = current_time
+            return
 
         # --- 4. XOTIRANI BOSHQARISH VA AI JAVOB QAYTARISH ---
         system_prompt = (
