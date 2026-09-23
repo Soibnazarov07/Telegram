@@ -26,8 +26,8 @@ allowed_groups = set()       # ruxsat etilgan guruhlar (chat_id)
 
 # Ism bo'yicha qidiruv (kichik harflarda)
 NAME_KEYWORDS = [
-    "ro'zimurod",
-    "rozimurod",
+    "Ro'zimurod",
+    "Ro'zmurod",
     "ro‘zimurod",
     "soibnazarov",
     "soib nazarov",
