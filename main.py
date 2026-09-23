@@ -10,10 +10,6 @@ API_HASH = os.environ["API_HASH"]
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 SESSION_STRING = os.environ["SESSION_STRING"]
 
-# llama-3.3-70b-versatile 2026-08-16 dan free/developer tarifida o'chirilgan.
-# Rasmiy o'rinbosarlar:
-#   - openai/gpt-oss-120b  (kuchliroq)
-#   - openai/gpt-oss-20b   (tezroq, arzonroq)
 AI_MODEL = "openai/gpt-oss-120b"
 
 client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
@@ -27,6 +23,15 @@ bot_active = True
 welcomed_chats = {}          # chat_id -> oxirgi welcome vaqti
 chat_histories = {}          # chat_id -> messages list
 allowed_groups = set()       # ruxsat etilgan guruhlar (chat_id)
+
+# Ism bo'yicha qidiruv (kichik harflarda)
+NAME_KEYWORDS = [
+    "ro'zimurod",
+    "rozimurod",
+    "ro‘zimurod",
+    "soibnazarov",
+    "soib nazarov",
+]
 
 
 # ================== BUYRUQLAR (faqat o'zingizdan) ==================
@@ -94,14 +99,24 @@ async def handler(event):
     if not bot_active:
         return
 
-    # Guruh bo'lsa — faqat ruxsat etilganlarda ishlaydi
+    # ---------- Guruh tekshiruvi ----------
     if event.is_group:
+        # Faqat ruxsat etilgan guruhlarda
         if event.chat_id not in allowed_groups:
             return
+
+        # Faqat belgilanganda yoki ism yozilganda javob beradi
+        text_lower = (event.raw_text or "").lower()
+        is_mentioned = event.mentioned
+        has_name = any(keyword in text_lower for keyword in NAME_KEYWORDS)
+
+        if not (is_mentioned or has_name):
+            return  # hech narsa yozmaydi
+
     # Kanalda umuman ishlamaydi
     elif event.is_channel:
         return
-    # Shaxsiy chat — avvalgidek ishlaydi
+    # Shaxsiy chat — har doim ishlaydi
 
     sender = await event.get_sender()
     if sender and getattr(sender, "bot", False):
