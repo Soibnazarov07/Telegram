@@ -26,6 +26,7 @@ groq_client = OpenAI(
 bot_active = True
 welcomed_chats = {}          # chat_id -> oxirgi welcome vaqti
 chat_histories = {}          # chat_id -> messages list
+allowed_groups = set()       # ruxsat etilgan guruhlar (chat_id)
 
 
 # ================== BUYRUQLAR (faqat o'zingizdan) ==================
@@ -51,6 +52,40 @@ async def clear_memory(event):
     await event.edit("🗑 **Ushbu chat uchun xotira tozalandi!**")
 
 
+@client.on(events.NewMessage(pattern="/add_group", outgoing=True))
+async def add_group(event):
+    if not event.is_group:
+        await event.edit("❌ Bu buyruq faqat **guruh**da ishlaydi!")
+        return
+    allowed_groups.add(event.chat_id)
+    title = getattr(event.chat, "title", str(event.chat_id))
+    await event.edit(f"✅ Guruh qo'shildi:\n**{title}**\n`{event.chat_id}`")
+
+
+@client.on(events.NewMessage(pattern="/remove_group", outgoing=True))
+async def remove_group(event):
+    if not event.is_group:
+        await event.edit("❌ Bu buyruq faqat **guruh**da ishlaydi!")
+        return
+    if event.chat_id in allowed_groups:
+        allowed_groups.discard(event.chat_id)
+        title = getattr(event.chat, "title", str(event.chat_id))
+        await event.edit(f"🗑 Guruh olib tashlandi:\n**{title}**\n`{event.chat_id}`")
+    else:
+        await event.edit("ℹ️ Bu guruh allaqachon ro'yxatda yo'q.")
+
+
+@client.on(events.NewMessage(pattern="/list_groups", outgoing=True))
+async def list_groups(event):
+    if not allowed_groups:
+        await event.edit("📭 Hozircha hech qanday guruh qo'shilmagan.\n\nGuruhga kirib `/add_group` yuboring.")
+        return
+    text = "✅ **Ruxsat etilgan guruhlar:**\n\n"
+    for gid in allowed_groups:
+        text += f"• `{gid}`\n"
+    await event.edit(text)
+
+
 # ================== ASOSIY HANDLER ==================
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
@@ -59,9 +94,14 @@ async def handler(event):
     if not bot_active:
         return
 
-    # Faqat shaxsiy chatlar
-    if event.is_group or event.is_channel:
+    # Guruh bo'lsa — faqat ruxsat etilganlarda ishlaydi
+    if event.is_group:
+        if event.chat_id not in allowed_groups:
+            return
+    # Kanalda umuman ishlamaydi
+    elif event.is_channel:
         return
+    # Shaxsiy chat — avvalgidek ishlaydi
 
     sender = await event.get_sender()
     if sender and getattr(sender, "bot", False):
@@ -179,6 +219,7 @@ async def handler(event):
 
 def main():
     print(f"✅ AI yordamchi ishga tushdi | Model: {AI_MODEL}")
+    print(f"📌 Ruxsat etilgan guruhlar: {len(allowed_groups)} ta")
     client.start()
     client.run_until_disconnected()
 
