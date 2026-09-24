@@ -31,12 +31,10 @@ def normalize_text(text: str) -> str:
     if not text:
         return ""
     text = text.lower()
-    # Barcha apostrofga o'xshash belgilarni oddiy ' ga aylantiramiz
     text = re.sub(r"[’‘ʻʼ`´]", "'", text)
     return text
 
 
-# Normalizatsiya qilingan holda saqlaymiz
 NAME_KEYWORDS = [
     "ro'zimurod",
     "rozimurod",
@@ -118,28 +116,23 @@ async def handler(event):
 
     # ---------- Guruh tekshiruvi ----------
     if event.is_group:
-        # Faqat ruxsat etilgan guruhlarda
         if event.chat_id not in allowed_groups:
             return
 
-        # Faqat belgilanganda yoki ism yozilganda javob beradi
         text_norm = normalize_text(event.raw_text or "")
         is_mentioned = event.mentioned
         has_name = any(keyword in text_norm for keyword in NAME_KEYWORDS)
 
         if not (is_mentioned or has_name):
-            return  # hech narsa yozmaydi
+            return
 
-    # Kanalda umuman ishlamaydi
     elif event.is_channel:
         return
-    # Shaxsiy chat — har doim ishlaydi
 
     sender = await event.get_sender()
     if sender and getattr(sender, "bot", False):
         return
 
-    # Agar oxirgi xabar o'zingizniki bo'lsa — javob bermaymiz
     try:
         async for last_msg in client.iter_messages(event.chat_id, limit=1):
             if last_msg.out:
@@ -210,7 +203,13 @@ async def handler(event):
             "Agar boshqa shaxsiy ma'lumotlarni so'rashsa, buni aytolmasligingizni bildiring. "
             "Har bir javobingizda qisqacha «Men Ro'zimurodning AI yordamchisiman» deb eslatib o'ting "
             "va savoliga chiroyli emojilar bilan javob bering. "
-            "Javoblaringiz qisqa, aniq va foydali bo'lsin."
+            "Javoblaringiz qisqa, aniq va foydali bo'lsin.\n\n"
+            "MAXSUS QOIDA (Tug'ilgan kun): "
+            "Agar foydalanuvchi tug'ilgan kun tabrigi yozsa (masalan: 'tug'ilgan kuningiz bilan', "
+            "'tabriklayman', 'yaxshi kunlar tilayman', 'bayramingiz muborak' va h.k.), "
+            "albatta minnatdorchilik bildiring. Masalan: "
+            "«Rahmat! 😊 Men Ro'zimurodning AI yordamchisiman. Tabrikingiz uchun katta rahmat!» "
+            "deb javob bering. Javobni samimiy va qisqa qiling."
         )
 
         if chat_id not in chat_histories:
