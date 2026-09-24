@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from telethon import TelegramClient, events
 from telethon.sessions import StringSession
@@ -24,13 +25,29 @@ welcomed_chats = {}          # chat_id -> oxirgi welcome vaqti
 chat_histories = {}          # chat_id -> messages list
 allowed_groups = set()       # ruxsat etilgan guruhlar (chat_id)
 
-# Ism bo'yicha qidiruv (kichik harflarda)
+# ================== ISM TEKSHIRISH ==================
+def normalize_text(text: str) -> str:
+    """Turli xil apostroflarni bir xil qilib, kichik harfga o'tkazadi"""
+    if not text:
+        return ""
+    text = text.lower()
+    # Barcha apostrofga o'xshash belgilarni oddiy ' ga aylantiramiz
+    text = re.sub(r"[’‘ʻʼ`´]", "'", text)
+    return text
+
+
+# Normalizatsiya qilingan holda saqlaymiz
 NAME_KEYWORDS = [
-    "Ro'zimurod",
-    "Ro'zmurod",
-    "ro‘zimurod",
+    "ro'zimurod",
+    "rozimurod",
+    "ro'zi",
+    "rozi",
+    "ruzi",
+    "ro'zibek",
+    "rozibek",
+    "ruzibek",
     "soibnazarov",
-    "soib nazarov",
+    "soib",
 ]
 
 
@@ -106,9 +123,9 @@ async def handler(event):
             return
 
         # Faqat belgilanganda yoki ism yozilganda javob beradi
-        text_lower = (event.raw_text or "").lower()
+        text_norm = normalize_text(event.raw_text or "")
         is_mentioned = event.mentioned
-        has_name = any(keyword in text_lower for keyword in NAME_KEYWORDS)
+        has_name = any(keyword in text_norm for keyword in NAME_KEYWORDS)
 
         if not (is_mentioned or has_name):
             return  # hech narsa yozmaydi
