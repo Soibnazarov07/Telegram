@@ -21,19 +21,16 @@ groq_client = OpenAI(
 )
 
 bot_active = True
-welcomed_chats = {}          # chat_id -> oxirgi welcome vaqti
-chat_histories = {}          # chat_id -> messages list
-allowed_groups = set()       # ruxsat etilgan guruhlar (chat_id)
+welcomed_chats = {}
+chat_histories = {}
+allowed_groups = set()
 
-# ================== ISM TEKSHIRISH ==================
 def normalize_text(text: str) -> str:
-    """Turli xil apostroflarni bir xil qilib, kichik harfga o'tkazadi"""
     if not text:
         return ""
     text = text.lower()
     text = re.sub(r"[’‘ʻʼ`´]", "'", text)
     return text
-
 
 NAME_KEYWORDS = [
     "ro'zimurod",
@@ -48,8 +45,7 @@ NAME_KEYWORDS = [
     "soib",
 ]
 
-
-# ================== BUYRUQLAR (faqat o'zingizdan) ==================
+# ================== BUYRUQLAR ==================
 @client.on(events.NewMessage(pattern="/stop", outgoing=True))
 async def stop_bot(event):
     global bot_active
@@ -114,7 +110,6 @@ async def handler(event):
     if not bot_active:
         return
 
-    # ---------- Guruh tekshiruvi ----------
     if event.is_group:
         if event.chat_id not in allowed_groups:
             return
@@ -145,7 +140,6 @@ async def handler(event):
     current_time = time.time()
 
     try:
-        # ---------- 1. Ovozli xabar → matn ----------
         if event.voice or event.audio:
             status = await event.reply("🎧 Ovozli xabar qabul qilindi, matnga o‘girilmoqda...")
             file_path = await event.download_media(file="temp_audio.ogg")
@@ -165,7 +159,6 @@ async def handler(event):
             except Exception:
                 pass
 
-        # ---------- 2. Rasm ----------
         if event.photo:
             file_path = await event.download_media(file="temp_image.jpg")
             caption = incoming_message or "Rasm bo‘yicha fikringizni bildiring"
@@ -176,7 +169,6 @@ async def handler(event):
         if not incoming_message:
             incoming_message = "Salom"
 
-        # ---------- 3. Bandlik xabari (1 kunda 1 marta) ----------
         ONE_DAY = 24 * 60 * 60
         needs_welcome = (
             chat_id not in welcomed_chats
@@ -192,31 +184,31 @@ async def handler(event):
             await event.reply(welcome_text)
             welcomed_chats[chat_id] = current_time
 
-        # ---------- 4. Xotira + AI ----------
         system_prompt = (
-    "Siz Soibnazarov Ro'zimurodning sun'iy intellekt (AI) yordamchisiz. "
-    "O'zbek tilida imlo xatolarisiz, savodli va ravon yozing. "
-    "MUHIM QOIDA: Foydalanuvchilar egangiz haqida so'rashsa, faqatgina ismini "
-    "(Soibnazarov Ro'zimurod) aytishingiz mumkin. "
-    "Uning ismidan boshqa hech qanday shaxsiy ma'lumotni "
-    "(manzil, o'qish joyi, nima ish qilishi, telefon raqami va hokazo) mutlaqo bermang. "
-    "Agar boshqa shaxsiy ma'lumotlarni so'rashsa, buni aytolmasligingizni bildiring. "
-    "Har bir javobingizda qisqacha «Men Ro'zimurodning AI yordamchisiman» deb eslatib o'ting "
-    "va savoliga chiroyli emojilar bilan javob bering. "
-    "Javoblaringiz qisqa, aniq va foydali bo'lsin.\n\n"
-    "MAXSUS QOIDA (Tug'ilgan kun): "
-    "Agar foydalanuvchi tug'ilgan kun tabrigi yozsa (masalan: 'tug'ilgan kuningiz bilan', "
-    "'tabriklayman', 'yaxshi kunlar tilayman', 'bayramingiz muborak', 'tug'ilgan kun muborak' va h.k.), "
-    "samimiy va HAR XIL uslubda minnatdorchilik bildiring. "
-    "Har safar bir xil javob bermang! "
-    "Masalan quyidagilardan birini yoki o'zingiz yangi chiroyli variant yarating:\n"
-    "• «Rahmat! 😊 Tabrikingiz uchun katta rahmat! Men Ro'zimurodning AI yordamchisiman.»\n"
-    "• «Juda xursandman, rahmat! 🎉 Yaxshi tilaklaringiz uchun tashakkur. Men Ro'zimurodning AI yordamchisiman.»\n"
-    "• «Katta rahmat! 🙏 Tabrikingiz yurakka yetdi. Men Ro'zimurodning AI yordamchisiman.»\n"
-    "• «Rahmat, do'st! 💫 Yaxshi kunlar o'zingizga ham. Men Ro'zimurodning AI yordamchisiman.»\n"
-    "• «Tabrigingiz uchun chin dildan rahmat! 😊 Men Ro'zimurodning AI yordamchisiman.»\n"
-    "Javobni qisqava hammaga har xil javob yozing odamlar zerikib qolishmasin, samimiy va emojilar bilan bezating."
-)
+            "Siz Soibnazarov Ro'zimurodning sun'iy intellekt (AI) yordamchisiz. "
+            "O'zbek tilida imlo xatolarisiz, savodli va ravon yozing. "
+            "MUHIM QOIDA: Foydalanuvchilar egangiz haqida so'rashsa, faqatgina ismini "
+            "(Soibnazarov Ro'zimurod) aytishingiz mumkin. "
+            "Uning ismidan boshqa hech qanday shaxsiy ma'lumotni "
+            "(manzil, o'qish joyi, nima ish qilishi, telefon raqami va hokazo) mutlaqo bermang. "
+            "Agar boshqa shaxsiy ma'lumotlarni so'rashsa, buni aytolmasligingizni bildiring. "
+            "Har bir javobingizda qisqacha «Men Ro'zimurodning AI yordamchisiman» deb eslatib o'ting "
+            "va savoliga chiroyli emojilar bilan javob bering. "
+            "Javoblaringiz qisqa, aniq va foydali bo'lsin.\n\n"
+            "MAXSUS QOIDA (Tug'ilgan kun): "
+            "Agar foydalanuvchi tug'ilgan kun tabrigi yozsa (masalan: 'tug'ilgan kuningiz bilan', "
+            "'tabriklayman', 'yaxshi kunlar tilayman', 'bayramingiz muborak', 'tug'ilgan kun muborak' va h.k.), "
+            "samimiy va HAR XIL uslubda minnatdorchilik bildiring. "
+            "Har safar bir xil javob bermang! "
+            "Masalan quyidagilardan birini yoki o'zingiz yangi chiroyli variant yarating:\n"
+            "• «Rahmat! 😊 Tabrikingiz uchun katta rahmat! Men Ro'zimurodning AI yordamchisiman.»\n"
+            "• «Juda xursandman, rahmat! 🎉 Yaxshi tilaklaringiz uchun tashakkur. Men Ro'zimurodning AI yordamchisiman.»\n"
+            "• «Katta rahmat! 🙏 Tabrikingiz yurakka yetdi. Men Ro'zimurodning AI yordamchisiman.»\n"
+            "• «Rahmat, do'st! 💫 Yaxshi kunlar o'zingizga ham. Men Ro'zimurodning AI yordamchisiman.»\n"
+            "• «Tabrigingiz uchun chin dildan rahmat! 😊 Men Ro'zimurodning AI yordamchisiman.»\n"
+            "Javobni qisqa, samimiy va emojilar bilan bezating."
+        )
+
         if chat_id not in chat_histories:
             chat_histories[chat_id] = [{"role": "system", "content": system_prompt}]
 
@@ -230,7 +222,7 @@ async def handler(event):
         response = groq_client.chat.completions.create(
             model=AI_MODEL,
             messages=chat_histories[chat_id],
-            temperature=0.7,
+            temperature=0.85,  # biroz ko'proq xilma-xillik uchun
             max_tokens=1024,
         )
 
