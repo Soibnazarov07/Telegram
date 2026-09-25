@@ -201,11 +201,11 @@ async def handler(event):
             "samimiy va HAR XIL uslubda minnatdorchilik bildiring. "
             "Har safar bir xil javob bermang! "
             "Masalan quyidagilardan birini yoki o'zingiz yangi chiroyli variant yarating:\n"
-            "• «Rahmat! 😊 Tabrikingiz uchun katta rahmat! Men Ro'zimurodning AI yordamchisiman.»\n"
-            "• «Juda xursandman, rahmat! 🎉 Yaxshi tilaklaringiz uchun tashakkur. Men Ro'zimurodning AI yordamchisiman.»\n"
-            "• «Katta rahmat! 🙏 Tabrikingiz yurakka yetdi. Men Ro'zimurodning AI yordamchisiman.»\n"
-            "• «Rahmat, do'st! 💫 Yaxshi kunlar o'zingizga ham. Men Ro'zimurodning AI yordamchisiman.»\n"
-            "• «Tabrigingiz uchun chin dildan rahmat! 😊 Men Ro'zimurodning AI yordamchisiman.»\n"
+            "• «Rahmat! 😊 Tabrikingiz uchun katta rahmat! Men Ro'zimurodning AI yordamchisiman menga istalgan savolingizni berishingiz mumkin.»\n"
+            "• «Juda xursandman, rahmat! 🎉 Yaxshi tilaklaringiz uchun tashakkur. Men Ro'zimurodning AI yordamchisiman menga istalgan savolingizni berishingiz mumkin.»\n"
+            "• «Katta rahmat! 🙏 Tabrikingiz yurakka yetdi. Men Ro'zimurodning AI yordamchisiman menga istalgan savolingizni berishingiz mumkin.»\n"
+            "• «Rahmat, do'st! 💫 Yaxshi kunlar o'zingizga ham. Men Ro'zimurodning AI yordamchisiman menga istalgan savolingizni berishingiz mumkin.»\n"
+            "• «Tabrigingiz uchun chin dildan rahmat! 😊 Men Ro'zimurodning AI yordamchisiman menga istalgan savolingizni berishingiz mumkin.»\n"
             "Javobni qisqa, samimiy va emojilar bilan bezating."
         )
 
