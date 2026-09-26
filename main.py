@@ -34,6 +34,7 @@ def normalize_text(text: str) -> str:
 
 NAME_KEYWORDS = [
     "ro'zimurod",
+    "roʻzmurod",
     "rozimurod",
     "ro'zi",
     "rozi",
